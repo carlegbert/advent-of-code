@@ -13,6 +13,7 @@ Grid = dict[Point, T]
 
 OBST = "#"
 GUARD = "^"
+EMPTY = "."
 
 
 DIRECTIONS: list[Point] = [
@@ -23,6 +24,10 @@ DIRECTIONS: list[Point] = [
 ]
 
 
+class InfiniteLoopError(Exception):
+    pass
+
+
 def get_guard_start(g: Grid[str]) -> Point:
     for k, v in g.items():
         if v == GUARD:
@@ -31,14 +36,17 @@ def get_guard_start(g: Grid[str]) -> Point:
     raise ValueError("No guard found!")
 
 
-def solve_p1(fname: str) -> int:
-    grid = build_from_file(fname)
-    pos = get_guard_start(grid)
-    visited: set[Point] = set()
+def get_guard_path(grid: Grid, pos: Point) -> set[Point]:
+    visited: dict[Point, set[int]] = {}
     dir = 3
 
     while True:
-        visited.add(pos)
+        previous_visits = visited.setdefault(pos, set())
+        if dir in previous_visits:
+            raise InfiniteLoopError
+        else:
+            previous_visits.add(dir)
+
         next_pos = add_point(pos, DIRECTIONS[dir])
         next_space = grid.get(next_pos)
         if next_space is None:
@@ -50,11 +58,36 @@ def solve_p1(fname: str) -> int:
         else:
             pos = next_pos
 
-    return len(visited)
+    return set(visited.keys())
+
+
+def solve_p1(fname: str) -> int:
+    grid = build_from_file(fname)
+    start = get_guard_start(grid)
+
+    return len(get_guard_path(grid, start))
 
 
 def solve_p2(fname: str) -> int:
-    return 0
+    grid = build_from_file(fname)
+    start = get_guard_start(grid)
+
+    guard_path = get_guard_path(grid, start)
+    guard_path.remove(start)
+
+    result = 0
+
+    for point in guard_path:
+        grid[point] = OBST
+
+        try:
+            get_guard_path(grid, start)
+        except InfiniteLoopError:
+            result += 1
+
+        grid[point] = EMPTY
+
+    return result
 
 
 class TestCase(unittest.TestCase):
