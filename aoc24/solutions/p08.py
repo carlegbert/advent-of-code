@@ -47,9 +47,17 @@ def antenna_iter(fname: str) -> Iterator[tuple[str, Point]]:
     fptr.close()
 
 
-def solve_p1(fname: str, size: int) -> int:
+def get_size(fname: str) -> int:
+    with open(fname, "rb") as fptr:
+        return sum(1 for _ in fptr)
+
+
+def solve_p1(fname: str) -> int:
     antenna_map: dict[str, set[Point]] = {}
     antinodes: set[Point] = set()
+
+    size = get_size(fname)
+
     for c, loc in antenna_iter(fname):
         if c in antenna_map:
             for p in antenna_map[c]:
@@ -66,9 +74,11 @@ def solve_p1(fname: str, size: int) -> int:
     return len(inbounds_antinodes)
 
 
-def solve_p2(fname: str, size: int) -> int:
+def solve_p2(fname: str) -> int:
     antenna_map: dict[str, set[Point]] = {}
     antinodes: set[Point] = set()
+    size = get_size(fname)
+
     for c, loc in antenna_iter(fname):
         if c in antenna_map:
             for p in antenna_map[c]:
@@ -83,24 +93,10 @@ def solve_p2(fname: str, size: int) -> int:
 
 class TestCase(unittest.TestCase):
     def test_p1(self):
-        self.assertEqual(solve_p1("test_inputs/day_08.txt", 12), 14)
+        self.assertEqual(solve_p1("aoc24/test_inputs/day_08.txt"), 14)
 
     def test_p2_small(self):
-        self.assertEqual(solve_p2("test_inputs/day_08_b.txt", 10), 9)
+        self.assertEqual(solve_p2("aoc24/test_inputs/day_08_b.txt"), 9)
 
     def test_p2(self):
-        self.assertEqual(solve_p2("test_inputs/day_08.txt", 12), 34)
-
-
-if __name__ == "__main__":
-    filename = "inputs/day_08.txt"
-    if len(sys.argv) == 1:
-        result = "ERROR: Specify part 1 or 2."
-    elif sys.argv[1] == "1":
-        result = solve_p1(filename, 50)
-    elif sys.argv[1] == "2":
-        result = solve_p2(filename, 50)
-    else:
-        result = "ERROR: Specify part 1 or 2."
-
-    print(result)
+        self.assertEqual(solve_p2("aoc24/test_inputs/day_08.txt"), 34)
