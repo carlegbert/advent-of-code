@@ -19,18 +19,12 @@ def compute_harmonic_antinodes(a: Point, b: Point, size: int) -> set[Point]:
     bx, by = b
     vx, vy = ax - bx, ay - by
 
-    result = set([a, b])
-    x, y = ax + vx, ay + vy
+    x, y = ax, ay
+    result = set()
     while x >= 0 and x < size and y >= 0 and y < size:
         result.add((x, y))
         x += vx
         y += vy
-
-    x, y = ax - vx, ay - vy
-    while x >= 0 and x < size and y >= 0 and y < size:
-        result.add((x, y))
-        x -= vx
-        y -= vy
 
     return result
 
@@ -79,14 +73,15 @@ def solve_p2(fname: str) -> int:
     antinodes: set[Point] = set()
     size = get_size(fname)
 
-    for c, loc in antenna_iter(fname):
+    for c, antenna_loc in antenna_iter(fname):
         if c in antenna_map:
-            for p in antenna_map[c]:
-                antinodes.update(compute_harmonic_antinodes(loc, p, size))
+            for matching_antenna in antenna_map[c]:
+                antinodes.update(compute_harmonic_antinodes(antenna_loc, matching_antenna, size))
+                antinodes.update(compute_harmonic_antinodes(matching_antenna, antenna_loc, size))
         else:
             antenna_map[c] = set()
 
-        antenna_map[c].add(loc)
+        antenna_map[c].add(antenna_loc)
 
     return len(antinodes)
 
