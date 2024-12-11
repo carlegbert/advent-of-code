@@ -1,37 +1,19 @@
-import re
 import sys
 from typing import Iterable
 import unittest
 
-Point = tuple[int, int]
-Grid = dict[Point, int]
+from aoc24.lib.grid import Grid, Point, adjacent_points, build_int_grid
+
+G = Grid[int]
 
 
-def build_grid(fname: str) -> Grid:
-    result = {}
-    with open(fname) as fptr:
-        for y, line in enumerate(fptr):
-            for x, c in enumerate(line.rstrip()):
-                result[(x, y)] = int(c)
-
-    return result
-
-
-def trailheads(grid: Grid) -> Iterable[Point]:
+def trailheads(grid: G) -> Iterable[Point]:
     for k, v in grid.items():
         if v == 0:
             yield k
 
 
-def adjacent_points(p: Point, g: Grid) -> Iterable[Point]:
-    x, y = p
-    for vx, vy in [(1, 0), (0, 1), (-1, 0), (0, -1)]:
-        a = vx + x, vy + y
-        if a in g:
-            yield a
-
-
-def score_trailhead(t: Point, g: Grid) -> int:
+def score_trailhead(t: Point, g: G) -> int:
     visited: set[Point] = set()
     to_visit: set[Point] = set([t])
     result = 0
@@ -56,7 +38,7 @@ def score_trailhead(t: Point, g: Grid) -> int:
     return result
 
 
-def rate_trailhead(t: Point, g: Grid) -> int:
+def rate_trailhead(t: Point, g: G) -> int:
     approaches: dict[Point, int] = {}
     summits: set[Point] = set()
 
@@ -81,12 +63,12 @@ def rate_trailhead(t: Point, g: Grid) -> int:
 
 
 def solve_p1(fname: str) -> int:
-    g = build_grid(fname)
+    g = build_int_grid(fname)
     return sum([score_trailhead(t, g) for t in trailheads(g)])
 
 
 def solve_p2(fname: str) -> int:
-    g = build_grid(fname)
+    g = build_int_grid(fname)
     return sum([rate_trailhead(t, g) for t in trailheads(g)])
 
 
