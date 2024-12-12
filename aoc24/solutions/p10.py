@@ -1,7 +1,7 @@
 from typing import Iterable
 import unittest
 
-from aoc24.lib.grid import Grid, Point, adjacent_points, build_int_grid
+from aoc24.lib.grid import Grid, Point, adjacent_points, build_grid
 
 G = Grid[int]
 
@@ -62,12 +62,12 @@ def rate_trailhead(t: Point, g: G) -> int:
 
 
 def solve_p1(fname: str) -> int:
-    g = build_int_grid(fname)
+    g = build_grid(fname, int)
     return sum([score_trailhead(t, g) for t in trailheads(g)])
 
 
 def solve_p2(fname: str) -> int:
-    g = build_int_grid(fname)
+    g = build_grid(fname, int)
     return sum([rate_trailhead(t, g) for t in trailheads(g)])
 
 
