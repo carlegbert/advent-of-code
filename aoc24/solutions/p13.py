@@ -13,23 +13,43 @@ Game = tuple[Cartesian, Cartesian, Cartesian]
 INT_REX = r"\d+"
 
 
-@cache
-def solve_game(game: Game, coins: int) -> Union[float, int]:
+def solve_game(game: Game) -> Union[float, int]:
     a, b, target = game
-    if target == (0, 0):
-        return coins
-
     x, y = target
-    if x < 0 or y < 0:
-        return math.inf
 
     ax, ay = a
     bx, by = b
 
-    return min(
-        solve_game((a, b, (x - ax, y - ay)), coins + 3),
-        solve_game((a, b, (x - bx, y - by)), coins + 1),
-    )
+    asol = bsol = 0
+
+    while 1:
+        if x < 0 or y < 0:
+            asol = math.inf
+            break
+
+        q = x / ax
+        if q == y / ay and q == int(q):
+            asol += 3 * int(q)
+            break
+        x -= bx
+        y -= by
+        asol += 1
+
+    x, y = target
+    while 1:
+        if x < 0 or y < 0:
+            bsol = math.inf
+            break
+
+        q = x / bx
+        if q == y / by and q == int(q):
+            bsol += int(q)
+            break
+        x -= ax
+        y -= ay
+        bsol += 3
+
+    return min(asol, bsol)
 
 
 def get_games(fname: str) -> Iterable[Game]:
@@ -41,7 +61,7 @@ def get_games(fname: str) -> Iterable[Game]:
 
 
 def solve_p1(fname: str) -> int:
-    coins = [solve_game(game, 0) for game in get_games(fname)]
+    coins = [solve_game(game) for game in get_games(fname)]
 
     return sum([int(c) for c in coins if c != math.inf])
 
