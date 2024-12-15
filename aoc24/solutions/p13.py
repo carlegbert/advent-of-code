@@ -1,8 +1,6 @@
-from functools import cache
 import math
 import re
-import sys
-from typing import Iterable, Union
+from typing import Iterable, Optional
 import unittest
 
 
@@ -11,68 +9,48 @@ Game = tuple[Cartesian, Cartesian, Cartesian]
 
 
 INT_REX = r"\d+"
+TEN_BILLION_DOLLARS = 10_000_000_000_000
 
 
-def solve_game(game: Game) -> Union[float, int]:
+# https://en.wikipedia.org/wiki/Cramer%27s_rule
+def solve_game(game: Game) -> Optional[int]:
     a, b, target = game
     x, y = target
 
     ax, ay = a
     bx, by = b
 
-    asol = bsol = 0
+    a_presses = (x * by - y * bx) / (ax * by - ay * bx)
+    b_presses = (y * ax - x * ay) / (ax * by - ay * bx)
 
-    while 1:
-        if x < 0 or y < 0:
-            asol = math.inf
-            break
-
-        q = x / ax
-        if q == y / ay and q == int(q):
-            asol += 3 * int(q)
-            break
-        x -= bx
-        y -= by
-        asol += 1
-
-    x, y = target
-    while 1:
-        if x < 0 or y < 0:
-            bsol = math.inf
-            break
-
-        q = x / bx
-        if q == y / by and q == int(q):
-            bsol += int(q)
-            break
-        x -= ax
-        y -= ay
-        bsol += 3
-
-    return min(asol, bsol)
+    result = a_presses * 3 + b_presses
+    rounded = int(result)
+    return rounded if rounded == result else None
 
 
-def get_games(fname: str) -> Iterable[Game]:
+def get_games(fname: str, padding: int = 0) -> Iterable[Game]:
     with open(fname) as fptr:
         sections = fptr.read().split("\n\n")
         for section in sections:
             ints = [int(x) for x in re.findall(INT_REX, section)]
-            yield (ints[0], ints[1]), (ints[2], ints[3]), (ints[4], ints[5])
+            a = ints[0], ints[1]
+            b = ints[2], ints[3]
+            x, y = ints[4], ints[5]
+            yield a, b, (x + padding, y + padding)
 
 
 def solve_p1(fname: str) -> int:
     coins = [solve_game(game) for game in get_games(fname)]
 
-    return sum([int(c) for c in coins if c != math.inf])
+    return sum([int(c) for c in coins if c is not None])
 
 
 def solve_p2(fname: str) -> int:
-    return 0
+    coins = [solve_game(game) for game in get_games(fname, TEN_BILLION_DOLLARS)]
+
+    return sum([int(c) for c in coins if c is not None])
 
 
 class TestCase(unittest.TestCase):
     def test_p1(self):
         self.assertEqual(solve_p1("aoc24/test_inputs/day_13.txt"), 480)
-
-    def test_p2(self):
-        self.assertEqual(solve_p2("aoc24/test_inputs/day_13.txt"), 0)
