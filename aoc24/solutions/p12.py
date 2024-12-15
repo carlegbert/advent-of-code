@@ -1,7 +1,8 @@
 from typing import Iterable
 import unittest
 
-from aoc24.lib.grid import Grid, Point, adjacent_points, build_grid
+from aoc24.lib.cartesian import Cartesian
+from aoc24.lib.grid import Grid, adjacent_points, build_grid
 
 
 G = Grid[str]
@@ -13,7 +14,7 @@ UP = -2j
 DOWN = 2j
 
 
-def adjacent_plots(p: Point, region: set[Point]) -> list[Point]:
+def adjacent_plots(p: Cartesian, region: set[Cartesian]) -> list[Cartesian]:
     x, y = p
     return [
         (vx + x, vy + y)
@@ -22,7 +23,7 @@ def adjacent_plots(p: Point, region: set[Point]) -> list[Point]:
     ]
 
 
-def region_perimeter(r: set[Point]) -> int:
+def region_perimeter(r: set[Cartesian]) -> int:
     return sum([4 - len(adjacent_plots(p, r)) for p in r])
 
 
@@ -39,7 +40,7 @@ def count_continuous_ranges(items: list[int]) -> int:
     return count
 
 
-def region_edges(r: set[Point]) -> int:
+def region_edges(r: set[Cartesian]) -> int:
     edge_sections: dict[complex, list[int]] = {}
     for p in r:
         a = adjacent_plots(p, r)
@@ -58,11 +59,11 @@ def region_edges(r: set[Point]) -> int:
     return sum([count_continuous_ranges(x) for x in edge_sections.values()])
 
 
-def get_regions(g: G) -> Iterable[set[Point]]:
-    to_visit: set[Point] = set(g)
-    to_visit_in_region: list[Point] = [to_visit.pop()]
+def get_regions(g: G) -> Iterable[set[Cartesian]]:
+    to_visit: set[Cartesian] = set(g)
+    to_visit_in_region: list[Cartesian] = [to_visit.pop()]
     region_label: str = g[to_visit_in_region[0]]
-    region: set[Point] = set()
+    region: set[Cartesian] = set()
 
     while to_visit_in_region:
         node = to_visit_in_region.pop()

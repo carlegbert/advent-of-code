@@ -1,10 +1,11 @@
 from typing import Callable, Iterable, TypeVar
 
+from aoc24.lib.cartesian import Cartesian
+
 
 T = TypeVar("T")
 
-Point = tuple[int, int]
-Grid = dict[Point, T]
+Grid = dict[Cartesian, T]
 
 
 def build_grid(fname: str, f: Callable = str) -> Grid:
@@ -17,7 +18,7 @@ def build_grid(fname: str, f: Callable = str) -> Grid:
     return result
 
 
-def adjacent_points(p: Point, g: Grid) -> Iterable[Point]:
+def adjacent_points(p: Cartesian, g: Grid) -> Iterable[Cartesian]:
     x, y = p
     for vx, vy in [(1, 0), (0, 1), (-1, 0), (0, -1)]:
         a = vx + x, vy + y

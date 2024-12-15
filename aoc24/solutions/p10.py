@@ -1,20 +1,21 @@
 from typing import Iterable
 import unittest
 
-from aoc24.lib.grid import Grid, Point, adjacent_points, build_grid
+from aoc24.lib.cartesian import Cartesian
+from aoc24.lib.grid import Grid, adjacent_points, build_grid
 
 G = Grid[int]
 
 
-def trailheads(grid: G) -> Iterable[Point]:
+def trailheads(grid: G) -> Iterable[Cartesian]:
     for k, v in grid.items():
         if v == 0:
             yield k
 
 
-def score_trailhead(t: Point, g: G) -> int:
-    visited: set[Point] = set()
-    to_visit: set[Point] = set([t])
+def score_trailhead(t: Cartesian, g: G) -> int:
+    visited: set[Cartesian] = set()
+    to_visit: set[Cartesian] = set([t])
     result = 0
 
     while to_visit:
@@ -37,11 +38,11 @@ def score_trailhead(t: Point, g: G) -> int:
     return result
 
 
-def rate_trailhead(t: Point, g: G) -> int:
-    approaches: dict[Point, int] = {}
-    summits: set[Point] = set()
+def rate_trailhead(t: Cartesian, g: G) -> int:
+    approaches: dict[Cartesian, int] = {}
+    summits: set[Cartesian] = set()
 
-    to_visit: list[Point] = [t]
+    to_visit: list[Cartesian] = [t]
     while to_visit:
         p = to_visit.pop()
         approaches.setdefault(p, 0)
