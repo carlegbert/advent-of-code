@@ -30,15 +30,32 @@ def parse_input(fname: str) -> tuple[G, Cartesian, Cartesian]:
     return grid, start, end
 
 
-def dijkstra(grid: G, start: Cartesian) -> dict[tuple[Cartesian, Cartesian], int]:
+def dijkstra(grid: G, start: Cartesian, end: Cartesian) -> tuple[int, set[Cartesian]]:
     distances: dict[tuple[Cartesian, Cartesian], int] = {(start, RIGHT): 0}
-    h: list[tuple[int, tuple[Cartesian, Cartesian]]] = [(0, (start, RIGHT))]
+    # lazy but effective: just keep track of the path.
+    h: list[tuple[int, tuple[Cartesian, Cartesian], set[Cartesian]]] = [
+        (0, (start, RIGHT), set([start]))
+    ]
     visited: set[tuple[Cartesian, Cartesian]] = set()
+    best = math.inf
+    good_seats: set[Cartesian] = set()
 
     while h:
-        distance, node = heapq.heappop(h)
+        distance, node, path = heapq.heappop(h)
         visited.add(node)
+        if distance > best:
+            continue
+
         location, direction = node
+
+        if location == end:
+            if distance < best:
+                best = distance
+                good_seats = path
+            elif distance == best:
+                good_seats = good_seats.union(path)
+            continue
+
         moves = [d for d in ALL_DIRECTIONS if not is_opposite_direction(direction, d)]
         moves = [m for m in moves if grid.get(cartesian_add(location, m), "#") != "#"]
         for m in moves:
@@ -51,19 +68,21 @@ def dijkstra(grid: G, start: Cartesian) -> dict[tuple[Cartesian, Cartesian], int
             new_distance = distance + cost
             if distances.get(key, math.inf) >= new_distance:
                 distances[key] = new_distance
-                heapq.heappush(h, (new_distance, key))
+                heapq.heappush(h, (new_distance, key, path.union([new_location])))
 
-    return distances
+    return int(best), good_seats
 
 
 def solve_p1(fname: str) -> int:
     grid, start, end = parse_input(fname)
-    distance_mapping = dijkstra(grid, start)
-    return min([distance_mapping[(end, dir)] for dir in ALL_DIRECTIONS])
+    result, _ = dijkstra(grid, start, end)
+    return result
 
 
 def solve_p2(fname: str) -> int:
-    return 0
+    grid, start, end = parse_input(fname)
+    _, good_seats = dijkstra(grid, start, end)
+    return len(good_seats)
 
 
 class TestCase(unittest.TestCase):
