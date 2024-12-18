@@ -67,7 +67,17 @@ def solve_p1(fname: str) -> int:
 
 
 def solve_p2(fname: str) -> int:
-    return 0
+    _, program = parse_input(fname)
+    i = 0
+    while True:
+        out = run(program, i)
+        if program == out:
+            return i
+        elif program[-len(out) :] == out:
+            print(f"{i}: {out}")
+            i *= 8
+        else:
+            i += 1
 
 
 class TestCase(unittest.TestCase):
