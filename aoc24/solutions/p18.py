@@ -26,37 +26,42 @@ def neighbors(
         yield n
 
 
-def shortest_path(mem: set[Cartesian], size: int) -> int:
+def shortest_path(mem: set[Cartesian], size: int) -> set[Cartesian]:
     end = size - 1, size - 1
 
     visited = set()
-    to_visit: list[tuple[int, Cartesian]] = [(0, (0, 0))]
+    start = 0, 0
+    to_visit: list[tuple[int, Cartesian, set[Cartesian]]] = [(0, start, set([start]))]
     while to_visit:
-        s, node = heapq.heappop(to_visit)
+        s, node, path = heapq.heappop(to_visit)
         if node in visited:
             continue
         if node == end:
-            return s
+            return path
 
         visited.add(node)
         for n in neighbors(node, size, mem):
-            heapq.heappush(to_visit, (s + 1, n))
+            new_path: set[Cartesian] = path | set([node])
+            heapq.heappush(to_visit, (s + 1, n, new_path))
 
-    return -1
+    return set()
 
 
 def solve_p1(fname: str, size=71, b=1024) -> int:
     g = parse_input(fname)
     corrupted_memory = set(islice(g, b))
-    return shortest_path(corrupted_memory, size, b)
+    return len(shortest_path(corrupted_memory, size))
 
 
 def solve_p2(fname: str, size=71, b=1024) -> str:
     g = parse_input(fname)
     corrupted_memory = set(islice(g, b - 1))
+    path = shortest_path(corrupted_memory, size)
     for m in g:
         corrupted_memory.add(m)
-        if shortest_path(corrupted_memory, size, b) == -1:
+        if m in path:
+            path = shortest_path(corrupted_memory, size)
+        if not path:
             x, y = m
             return f"{x},{y}"
 
