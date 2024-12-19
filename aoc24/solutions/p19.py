@@ -1,3 +1,4 @@
+import heapq
 from typing import Iterable
 import unittest
 
@@ -23,28 +24,29 @@ def desired_designs(fname: str) -> Iterable[str]:
             yield line.rstrip()
 
 
-def design_possible(design: str, towels: Towels, biggest_towel: int) -> int:
+def designs_possible(design: str, towels: Towels, biggest_towel: int) -> int:
     to_check: list[int] = [0]
     checked = set()
-    count = 0
+    ways_to_get_there: dict[int, int] = {0: 1}
     while to_check:
-        i = to_check.pop()
-        if i == len(design):
-            count += 1
+        i = heapq.heappop(to_check)
 
-        if i > len(design) or i in checked:
+        if i >= len(design) or i in checked:
             continue
 
         checked.add(i)
+        ways_to_get_here = ways_to_get_there[i]
 
         for n in range(1, biggest_towel + 1):
             end = i + n
             substr = design[i:end]
             t = towels.get(n, set())
             if substr in t:
-                to_check.append(end)
+                ways_to_get_there.setdefault(end, 0)
+                ways_to_get_there[end] += ways_to_get_here
+                heapq.heappush(to_check, end)
 
-    return count
+    return ways_to_get_there.get(len(design), 0)
 
 
 def solve_p1(fname: str) -> int:
@@ -53,7 +55,7 @@ def solve_p1(fname: str) -> int:
     designs = desired_designs(fname)
     count = 0
     for design in designs:
-        if design_possible(design, towels, biggest_towel):
+        if designs_possible(design, towels, biggest_towel):
             count += 1
     return count
 
@@ -62,7 +64,7 @@ def solve_p2(fname: str) -> int:
     towels = available_towels(fname)
     biggest_towel = max(towels.keys())
     designs = desired_designs(fname)
-    return sum([design_possible(design, towels, biggest_towel) for design in designs])
+    return sum([designs_possible(design, towels, biggest_towel) for design in designs])
 
 
 class TestCase(unittest.TestCase):
