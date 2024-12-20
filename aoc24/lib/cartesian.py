@@ -1,3 +1,6 @@
+from typing import Iterable
+
+
 Cartesian = tuple[int, int]
 
 
@@ -26,3 +29,9 @@ def is_opposite_direction(a: Cartesian, b: Cartesian) -> bool:
     bx, by = b
 
     return ax == bx and ay != by or ax != bx and ay == by
+
+
+def neighboring_points(p: Cartesian) -> Iterable[Cartesian]:
+    x, y = p
+    for vx, vy in ALL_DIRECTIONS:
+        yield vx + x, vy + y
