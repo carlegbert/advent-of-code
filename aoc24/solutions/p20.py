@@ -1,11 +1,26 @@
 import itertools
+from typing import Iterable
 import unittest
 
-from aoc24.lib.cartesian import Cartesian, neighboring_points
+from aoc24.lib.cartesian import Cartesian, neighboring_points, points_within_n
 from aoc24.lib.grid import adjacent_points, build_grid
 
 
 Racetrack = dict[Cartesian, int]
+
+
+def points_within_n_with_distance(
+    p: Cartesian, n: int
+) -> Iterable[tuple[Cartesian, int]]:
+    x, y = p
+    for vy in range(-n, n + 1):
+        for vx in range(-n, n + 1):
+            if vx == 0 and vy == 0:
+                continue
+            distance = abs(vx) + abs(vy)
+            if distance > n:
+                continue
+            yield (vx + x, vy + y), distance
 
 
 def get_racetrack(fname: str) -> tuple[Racetrack, Cartesian, Cartesian]:
@@ -33,23 +48,27 @@ def get_racetrack(fname: str) -> tuple[Racetrack, Cartesian, Cartesian]:
     return result, start, end
 
 
-def shortcuts_from_point(p: Cartesian, t: Racetrack) -> set[int]:
+def shortcuts_from_point(p: Cartesian, t: Racetrack, distance: int) -> list[int]:
     start = t[p]
-    walls = [n for n in neighboring_points(p) if n not in t]
-    shortcut_dests = itertools.chain(*[neighboring_points(w) for w in walls])
-    reachable = [s for s in shortcut_dests if s in t]
-    return set([t[p] - start - 2 for p in reachable])
+    targets = [(p, d) for p, d in points_within_n_with_distance(p, distance) if p in t]
+    distances = [t[p] - d - start for p, d in targets]
+    return distances
 
 
 def solve_p1(fname: str, threshold: int = 100) -> int:
     track, _, _ = get_racetrack(fname)
     positions = track.keys()
-    shortcuts = itertools.chain(*[shortcuts_from_point(p, track) for p in positions])
+    shortcuts = itertools.chain(*[shortcuts_from_point(p, track, 2) for p in positions])
     return len([s for s in shortcuts if s >= threshold])
 
 
-def solve_p2(fname: str) -> int:
-    return 0
+def solve_p2(fname: str, threshold: int = 100) -> int:
+    track, _, _ = get_racetrack(fname)
+    positions = track.keys()
+    shortcuts = itertools.chain(
+        *[shortcuts_from_point(p, track, 20) for p in positions]
+    )
+    return len([s for s in shortcuts if s >= threshold])
 
 
 class TestCase(unittest.TestCase):
@@ -57,4 +76,4 @@ class TestCase(unittest.TestCase):
         self.assertEqual(solve_p1("aoc24/test_inputs/day_20.txt", 12), 8)
 
     def test_p2(self):
-        self.assertEqual(solve_p2("aoc24/test_inputs/day_20.txt"), 0)
+        self.assertEqual(solve_p2("aoc24/test_inputs/day_20.txt", 72), 29)
