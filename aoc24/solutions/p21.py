@@ -51,15 +51,9 @@ def path_valid(point: Cartesian, path: str, keypad: dict[Cartesian, str]) -> boo
     return True
 
 
-def get_all_paths(
-    points: list[Cartesian],
-    start: Cartesian,
-    keyboard: dict[Cartesian, str],
+def paths_between(
+    start: Cartesian, target: Cartesian, keyboard: dict[Cartesian, str]
 ) -> list[str]:
-    if not points:
-        return []
-
-    target = points[0]
     tx, ty = target
     sx, sy = start
 
@@ -77,24 +71,35 @@ def get_all_paths(
     paths_to_this_node = [h + v + "A"]
     if h and v:
         paths_to_this_node += [v + h + "A"]
-    paths_to_this_node = [
-        p for p in paths_to_this_node if path_valid(start, p, keyboard)
-    ]
+
+    return [p for p in paths_to_this_node if path_valid(start, p, keyboard)]
+
+
+def get_all_paths(
+    points: list[Cartesian],
+    start: Cartesian,
+    keyboard: dict[Cartesian, str],
+) -> list[str]:
+    if not points:
+        return []
+
+    target = points[0]
+    paths_to_this_node = paths_between(start, target, keyboard)
 
     downstream_paths = get_all_paths(points[1:], target, keyboard)
     if not downstream_paths:
         return paths_to_this_node
 
-    result = []
+    result: list[str] = []
     for p in paths_to_this_node:
         result += [p + d for d in downstream_paths]
     return result
 
 
-def shortest_path(code: str) -> str:
+def shortest_path(code: str, n: int) -> str:
     p = [NUM_TO_CART[c] for c in code]
     paths = get_all_paths(p, NUM_TO_CART["A"], NUMPAD)
-    for _ in range(2):
+    for _ in range(n):
         paths = itertools.chain(
             *[
                 get_all_paths(
@@ -107,23 +112,21 @@ def shortest_path(code: str) -> str:
     return min(paths, key=len)
 
 
-def path_complexity(code: str) -> int:
-    s = shortest_path(code)
+def path_complexity(code: str, n: int) -> int:
+    s = shortest_path(code, n)
     return len(s) * int(code[:-1])
 
 
 def solve_p1(fname: str) -> int:
     with open(fname) as fptr:
-        return sum([path_complexity(line.rstrip()) for line in fptr])
+        return sum([path_complexity(line.rstrip(), 2) for line in fptr])
 
 
 def solve_p2(fname: str) -> int:
-    return 0
+    with open(fname) as fptr:
+        return sum([path_complexity(line.rstrip(), 25) for line in fptr])
 
 
 class TestCase(unittest.TestCase):
     def test_p1(self):
         self.assertEqual(solve_p1("aoc24/test_inputs/day_21.txt"), 126384)
-
-    def test_p2(self):
-        self.assertEqual(solve_p2("test_inputs/day_21.txt"), 0)
