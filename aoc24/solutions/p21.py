@@ -1,10 +1,120 @@
-import re
-import sys
+import itertools
 import unittest
+
+from aoc24.lib.cartesian import DOWN, LEFT, RIGHT, UP, Cartesian, cartesian_add
+
+NUMPAD: dict[Cartesian, str] = {
+    (0, 0): "7",
+    (1, 0): "8",
+    (2, 0): "9",
+    (0, 1): "4",
+    (1, 1): "5",
+    (2, 1): "6",
+    (0, 2): "1",
+    (1, 2): "2",
+    (2, 2): "3",
+    (1, 3): "0",
+    (2, 3): "A",
+}
+
+ARROWPAD: dict[Cartesian, str] = {
+    (1, 0): "^",
+    (2, 0): "A",
+    (0, 1): "<",
+    (1, 1): "v",
+    (2, 1): ">",
+}
+
+NUM_TO_CART = {v: k for k, v in NUMPAD.items()}
+ARROW_TO_CART = {v: k for k, v in ARROWPAD.items()}
+
+
+def keypad_to_coords(s: str, keypad: dict[str, Cartesian]) -> list[Cartesian]:
+    return [keypad[c] for c in s]
+
+
+def path_valid(point: Cartesian, path: str, keypad: dict[Cartesian, str]) -> bool:
+    for c in path:
+        if point not in keypad:
+            # print(f"{point} not in keypad {keypad}")
+            return False
+
+        if c == "<":
+            point = cartesian_add(LEFT, point)
+        elif c == ">":
+            point = cartesian_add(RIGHT, point)
+        elif c == "^":
+            point = cartesian_add(UP, point)
+        elif c == "v":
+            point = cartesian_add(DOWN, point)
+
+    return True
+
+
+def get_all_paths(
+    points: list[Cartesian],
+    start: Cartesian,
+    keyboard: dict[Cartesian, str],
+) -> list[str]:
+    if not points:
+        return []
+
+    target = points[0]
+    tx, ty = target
+    sx, sy = start
+
+    h = ""
+    if tx > sx:
+        h = ">" * (tx - sx)
+    elif tx < sx:
+        h = "<" * (sx - tx)
+    v = ""
+    if ty > sy:
+        v = "v" * (ty - sy)
+    elif ty < sy:
+        v = "^" * (sy - ty)
+
+    paths_to_this_node = [h + v + "A"]
+    if h and v:
+        paths_to_this_node += [v + h + "A"]
+    paths_to_this_node = [
+        p for p in paths_to_this_node if path_valid(start, p, keyboard)
+    ]
+
+    downstream_paths = get_all_paths(points[1:], target, keyboard)
+    if not downstream_paths:
+        return paths_to_this_node
+
+    result = []
+    for p in paths_to_this_node:
+        result += [p + d for d in downstream_paths]
+    return result
+
+
+def shortest_path(code: str) -> str:
+    p = [NUM_TO_CART[c] for c in code]
+    paths = get_all_paths(p, NUM_TO_CART["A"], NUMPAD)
+    for _ in range(2):
+        paths = itertools.chain(
+            *[
+                get_all_paths(
+                    keypad_to_coords(s, ARROW_TO_CART), ARROW_TO_CART["A"], ARROWPAD
+                )
+                for s in paths
+            ]
+        )
+
+    return min(paths, key=len)
+
+
+def path_complexity(code: str) -> int:
+    s = shortest_path(code)
+    return len(s) * int(code[:-1])
 
 
 def solve_p1(fname: str) -> int:
-    return 0
+    with open(fname) as fptr:
+        return sum([path_complexity(line.rstrip()) for line in fptr])
 
 
 def solve_p2(fname: str) -> int:
@@ -13,21 +123,7 @@ def solve_p2(fname: str) -> int:
 
 class TestCase(unittest.TestCase):
     def test_p1(self):
-        self.assertEqual(solve_p1("test_inputs/day_21.txt"), 0)
+        self.assertEqual(solve_p1("aoc24/test_inputs/day_21.txt"), 126384)
 
     def test_p2(self):
         self.assertEqual(solve_p2("test_inputs/day_21.txt"), 0)
-
-
-if __name__ == "__main__":
-    filename = "inputs/day_21.txt"
-    if len(sys.argv) == 1:
-        result = "ERROR: Specify part 1 or 2."
-    elif sys.argv[1] == '1':
-        result = solve_p1(filename)
-    elif sys.argv[1] == '2':
-        result = solve_p2(filename)
-    else:
-        result = "ERROR: Specify part 1 or 2."
-
-    print(result)
