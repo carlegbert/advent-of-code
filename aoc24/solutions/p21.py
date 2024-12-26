@@ -1,3 +1,4 @@
+import functools
 import itertools
 import unittest
 
@@ -29,14 +30,13 @@ NUM_TO_CART = {v: k for k, v in NUMPAD.items()}
 ARROW_TO_CART = {v: k for k, v in ARROWPAD.items()}
 
 
-def keypad_to_coords(s: str, keypad: dict[str, Cartesian]) -> list[Cartesian]:
-    return [keypad[c] for c in s]
+def keypad_to_coords(s: str, keypad: dict[str, Cartesian]) -> tuple[Cartesian, ...]:
+    return tuple([keypad[c] for c in s])
 
 
 def path_valid(point: Cartesian, path: str, keypad: dict[Cartesian, str]) -> bool:
     for c in path:
         if point not in keypad:
-            # print(f"{point} not in keypad {keypad}")
             return False
 
         if c == "<":
@@ -51,22 +51,17 @@ def path_valid(point: Cartesian, path: str, keypad: dict[Cartesian, str]) -> boo
     return True
 
 
-def paths_between(
-    start: Cartesian, target: Cartesian, keyboard: dict[Cartesian, str]
-) -> list[str]:
+@functools.cache
+def paths_between(start: Cartesian, target: Cartesian, layer: int) -> list[str]:
+    keyboard = NUMPAD if layer == 0 else ARROWPAD
     tx, ty = target
     sx, sy = start
 
-    h = ""
-    if tx > sx:
-        h = ">" * (tx - sx)
-    elif tx < sx:
-        h = "<" * (sx - tx)
-    v = ""
-    if ty > sy:
-        v = "v" * (ty - sy)
-    elif ty < sy:
-        v = "^" * (sy - ty)
+    h = v = ""
+    h += ">" * (tx - sx)
+    h += "<" * (sx - tx)
+    v += "v" * (ty - sy)
+    v += "^" * (sy - ty)
 
     paths_to_this_node = [h + v + "A"]
     if h and v:
@@ -75,18 +70,17 @@ def paths_between(
     return [p for p in paths_to_this_node if path_valid(start, p, keyboard)]
 
 
+@functools.cache
 def get_all_paths(
-    points: list[Cartesian],
-    start: Cartesian,
-    keyboard: dict[Cartesian, str],
+    points: tuple[Cartesian, ...], start: Cartesian, layer: int
 ) -> list[str]:
     if not points:
         return []
 
     target = points[0]
-    paths_to_this_node = paths_between(start, target, keyboard)
+    paths_to_this_node = paths_between(start, target, layer)
 
-    downstream_paths = get_all_paths(points[1:], target, keyboard)
+    downstream_paths = get_all_paths(tuple(points[1:]), target, layer)
     if not downstream_paths:
         return paths_to_this_node
 
@@ -98,12 +92,12 @@ def get_all_paths(
 
 def shortest_path(code: str, n: int) -> str:
     p = [NUM_TO_CART[c] for c in code]
-    paths = get_all_paths(p, NUM_TO_CART["A"], NUMPAD)
-    for _ in range(n):
+    paths = get_all_paths(tuple(p), NUM_TO_CART["A"], 0)
+    for layer in range(n):
         paths = itertools.chain(
             *[
                 get_all_paths(
-                    keypad_to_coords(s, ARROW_TO_CART), ARROW_TO_CART["A"], ARROWPAD
+                    keypad_to_coords(s, ARROW_TO_CART), ARROW_TO_CART["A"], layer + 1
                 )
                 for s in paths
             ]
