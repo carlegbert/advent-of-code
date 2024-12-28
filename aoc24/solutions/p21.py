@@ -1,5 +1,5 @@
 import functools
-import itertools
+import heapq
 import unittest
 
 from aoc24.lib.cartesian import DOWN, LEFT, RIGHT, UP, Cartesian, cartesian_add
@@ -30,7 +30,8 @@ NUM_TO_CART = {v: k for k, v in NUMPAD.items()}
 ARROW_TO_CART = {v: k for k, v in ARROWPAD.items()}
 
 
-def keypad_to_coords(s: str, keypad: dict[str, Cartesian]) -> tuple[Cartesian, ...]:
+def keypad_to_coords(s: str, is_numpad: bool) -> tuple[Cartesian, ...]:
+    keypad = NUM_TO_CART if is_numpad else ARROW_TO_CART
     return tuple([keypad[c] for c in s])
 
 
@@ -52,8 +53,10 @@ def path_valid(point: Cartesian, path: str, keypad: dict[Cartesian, str]) -> boo
 
 
 @functools.cache
-def paths_between(start: Cartesian, target: Cartesian, layer: int) -> list[str]:
-    keyboard = NUMPAD if layer == 0 else ARROWPAD
+def paths_between_keys(_start: str, _target: str, is_numpad: bool) -> list[str]:
+    keyboard = NUMPAD if is_numpad else ARROWPAD
+    start = keypad_to_coords(_start, is_numpad)[0]
+    target = keypad_to_coords(_target, is_numpad)[0]
     tx, ty = target
     sx, sy = start
 
@@ -70,55 +73,31 @@ def paths_between(start: Cartesian, target: Cartesian, layer: int) -> list[str]:
     return [p for p in paths_to_this_node if path_valid(start, p, keyboard)]
 
 
-@functools.cache
-def get_all_paths(
-    points: tuple[Cartesian, ...], start: Cartesian, layer: int
-) -> list[str]:
-    if not points:
-        return []
+def best_path(key_combo: str, n: int, is_numpad: bool) -> str:
+    if n == 0:
+        return key_combo
 
-    target = points[0]
-    paths_to_this_node = paths_between(start, target, layer)
+    result = ""
+    for start, target in zip('A' + key_combo[:-1], key_combo):
+        candidates = paths_between_keys(start, target, is_numpad)
+        best = min([best_path(c, n - 1, False) for c in candidates])
+        result += best
 
-    downstream_paths = get_all_paths(tuple(points[1:]), target, layer)
-    if not downstream_paths:
-        return paths_to_this_node
-
-    result: list[str] = []
-    for p in paths_to_this_node:
-        result += [p + d for d in downstream_paths]
     return result
 
 
-def shortest_path(code: str, n: int) -> str:
-    p = [NUM_TO_CART[c] for c in code]
-    paths = get_all_paths(tuple(p), NUM_TO_CART["A"], 0)
-    for layer in range(n):
-        paths = itertools.chain(
-            *[
-                get_all_paths(
-                    keypad_to_coords(s, ARROW_TO_CART), ARROW_TO_CART["A"], layer + 1
-                )
-                for s in paths
-            ]
-        )
-
-    return min(paths, key=len)
-
-
-def path_complexity(code: str, n: int) -> int:
-    s = shortest_path(code, n)
-    return len(s) * int(code[:-1])
+def path_complexity(code: str, path: str) -> int:
+    return len(path) * int(code[:-1])
 
 
 def solve_p1(fname: str) -> int:
     with open(fname) as fptr:
-        return sum([path_complexity(line.rstrip(), 2) for line in fptr])
-
-
-def solve_p2(fname: str) -> int:
-    with open(fname) as fptr:
-        return sum([path_complexity(line.rstrip(), 25) for line in fptr])
+        return sum(
+            [
+                path_complexity(line.rstrip(), best_path(line.rstrip(), 3, True))
+                for line in fptr
+            ]
+        )
 
 
 class TestCase(unittest.TestCase):
