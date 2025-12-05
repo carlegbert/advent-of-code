@@ -19,7 +19,7 @@ func TestSolveP1(t *testing.T) {
 }
 
 func TestSolveP2(t *testing.T) {
-	expected := 0
+	expected := 6
 
 	result := day01.SolveP2(inputPath)
 

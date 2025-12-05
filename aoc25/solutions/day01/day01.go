@@ -3,6 +3,7 @@ package day01
 import (
 	"bufio"
 	"log"
+	"math"
 	"os"
 	"strconv"
 )
@@ -52,6 +53,32 @@ func SolveP1(inputPath string) int {
 }
 
 func SolveP2(inputPath string) int {
-	_ = inputPath
-	return 0
+	clicks := 0
+	dial := 50
+
+	bucket := 0.0
+	for r := range rotation(inputPath) {
+		newDial := dial + r
+		newBucket := math.Floor(float64(newDial) / 100.0)
+		if bucket > newBucket {
+			clicks += int(bucket - newBucket)
+		} else {
+			clicks += int(newBucket - bucket)
+		}
+		// Leaving from zero and going down changes
+		// buckets, but is not an actual click, so
+		// we accomodate with a little hack.
+		if dial%100 == 0 && r < 0 {
+			clicks -= 1
+		}
+		// And the converse- going down and landing on zero
+		// _doesn't_ change buckets but _is_ a click.
+		if newDial%100 == 0 && r < 0 {
+			clicks += 1
+		}
+		dial = newDial
+		bucket = newBucket
+	}
+
+	return clicks
 }
