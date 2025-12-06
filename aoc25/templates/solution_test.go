@@ -9,7 +9,7 @@ import (
 const exampleInputPath = "example.txt"
 
 func TestSolveP1(t *testing.T) {
-	expected := 1227775554
+	expected := 0
 
 	result := dayNN.SolveP1(exampleInputPath)
 

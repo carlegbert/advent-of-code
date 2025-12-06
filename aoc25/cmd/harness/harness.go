@@ -3,14 +3,20 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 
 	"github.com/carlegbert/advent-of-code/aoc25/solutions/day01"
 	"github.com/carlegbert/advent-of-code/aoc25/solutions/day02"
-
-	"os"
+	"github.com/carlegbert/advent-of-code/aoc25/solutions/day03"
 )
 
 const inputPathFormat = "inputs/day%02d.txt"
+
+func notImplemented(day, part int) func(string) int {
+	return func(string) int {
+		panic(fmt.Sprintf("Day %02d Part %d is not yet implemented", day, part))
+	}
+}
 
 var solutions = map[int]map[int]func(string) int{
 	1: {
@@ -20,6 +26,46 @@ var solutions = map[int]map[int]func(string) int{
 	2: {
 		1: day02.SolveP1,
 		2: day02.SolveP2,
+	},
+	3: {
+		1: day03.SolveP1,
+		2: day03.SolveP2,
+	},
+	4: {
+		1: notImplemented(4, 1),
+		2: notImplemented(4, 2),
+	},
+	5: {
+		1: notImplemented(5, 1),
+		2: notImplemented(5, 2),
+	},
+	6: {
+		1: notImplemented(6, 1),
+		2: notImplemented(6, 2),
+	},
+	7: {
+		1: notImplemented(7, 1),
+		2: notImplemented(7, 2),
+	},
+	8: {
+		1: notImplemented(8, 1),
+		2: notImplemented(8, 2),
+	},
+	9: {
+		1: notImplemented(9, 1),
+		2: notImplemented(9, 2),
+	},
+	10: {
+		1: notImplemented(10, 1),
+		2: notImplemented(10, 2),
+	},
+	11: {
+		1: notImplemented(11, 1),
+		2: notImplemented(11, 2),
+	},
+	12: {
+		1: notImplemented(12, 1),
+		2: notImplemented(12, 2),
 	},
 }
 
