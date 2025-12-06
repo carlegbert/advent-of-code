@@ -33,18 +33,22 @@ func getRanges(inputPath string) <-chan Range {
 	return ch
 }
 
+func numberRepeatsOnce(n int) bool {
+	d := lib.DigitsInNum(n)
+	if d%2 == 1 {
+		return false
+	}
+	h := d / 2
+	s := int(math.Pow10(h))
+	return n/s == n%s
+}
+
 func invalidNumbersInRange(r Range) <-chan int {
 	ch := make(chan int)
 	go func() {
 		defer close(ch)
 		for i := r.left; i <= r.right; i++ {
-			d := lib.DigitsInNum(i)
-			if d%2 == 1 {
-				continue
-			}
-			h := d / 2
-			s := int(math.Pow10(h))
-			if i/s == i%s {
+			if numberRepeatsOnce(i) {
 				ch <- i
 			}
 
