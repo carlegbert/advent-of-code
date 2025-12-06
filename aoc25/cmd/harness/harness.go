@@ -3,7 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+
 	"github.com/carlegbert/advent-of-code/aoc25/solutions/day01"
+	"github.com/carlegbert/advent-of-code/aoc25/solutions/day02"
 
 	"os"
 )
@@ -14,6 +16,10 @@ var solutions = map[int]map[int]func(string) int{
 	1: {
 		1: day01.SolveP1,
 		2: day01.SolveP2,
+	},
+	2: {
+		1: day02.SolveP1,
+		2: day02.SolveP2,
 	},
 }
 
