@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"log"
 	"os"
+	"strings"
 )
 
 func GetLines(inputPath string) <-chan string {
@@ -30,5 +31,5 @@ func GetString(inputPath string) string {
 		log.Fatal(err)
 	}
 
-	return string(contentBytes)
+	return strings.TrimSpace((string(contentBytes)))
 }

@@ -1,3 +1,5 @@
 module github.com/carlegbert/advent-of-code/aoc25
 
 go 1.25.4
+
+require golang.org/x/exp v0.0.0-20251125195548-87e1e737ad39
