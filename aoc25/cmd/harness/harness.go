@@ -8,6 +8,7 @@ import (
 	"github.com/carlegbert/advent-of-code/aoc25/solutions/day01"
 	"github.com/carlegbert/advent-of-code/aoc25/solutions/day02"
 	"github.com/carlegbert/advent-of-code/aoc25/solutions/day03"
+	"github.com/carlegbert/advent-of-code/aoc25/solutions/day04"
 )
 
 const inputPathFormat = "inputs/day%02d.txt"
@@ -32,8 +33,8 @@ var solutions = map[int]map[int]func(string) int{
 		2: day03.SolveP2,
 	},
 	4: {
-		1: notImplemented(4, 1),
-		2: notImplemented(4, 2),
+		1: day04.SolveP1,
+		2: day04.SolveP2,
 	},
 	5: {
 		1: notImplemented(5, 1),
